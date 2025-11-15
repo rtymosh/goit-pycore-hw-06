@@ -78,6 +78,7 @@
 
 # from collections import UserDict
 
+
 # class Field:
 #     def __init__(self, value):
 #         self.value = value
@@ -85,13 +86,16 @@
 #     def __str__(self):
 #         return str(self.value)
 
+
 # class Name(Field):
 #     # реалізація класу
-# 		pass
+#     pass
+
 
 # class Phone(Field):
 #     # реалізація класу
-# 		pass
+#     pass
+
 
 # class Record:
 #     def __init__(self, name):
@@ -103,9 +107,10 @@
 #     def __str__(self):
 #         return f"Contact name: {self.name.value}, phones: {'; '.join(p.value for p in self.phones)}"
 
+
 # class AddressBook(UserDict):
 #     # реалізація класу
-# 		pass
+#     pass
 
 
 # Після реалізації ваш код має виконуватися таким чином:
@@ -166,3 +171,111 @@
 # Клас Phone:
 
 # ﻿Реалізовано валідацію номера телефону (має бути перевірка на 10 цифр).
+
+from collections import UserDict
+
+
+class Field:
+    def __init__(self, value):
+        self.value = value
+
+    def __str__(self):
+        return str(self.value)
+
+
+class Name(Field):
+    # реалізація класу
+    pass
+
+
+class Phone(Field):
+    # реалізація класу
+    def __init__(
+        self, value
+    ) -> None:  # validation of phone number in constructor of Phone class
+        if not value.isdigit() or len(value) != 10:
+            raise ValueError("Phone number must contain exactly 10 digits.")
+        super().__init__(value)
+
+
+class Record:
+    def __init__(self, name):
+        self.name = Name(name)
+        self.phones = []  # list of Phone objects
+
+    # реалізація класу
+
+    def __str__(self):
+        return f"Contact name: {self.name.value}, phones: {'; '.join(p.value for p in self.phones)}"
+
+    def add_phone(
+        self, phone_number
+    ) -> None:  # add a new phone to list of object phones at record class
+        phone = Phone(phone_number)
+        self.phones.append(phone)
+
+    def remove_phone(
+        self, phone_number
+    ) -> None:  # remove a phone from list of object phones at record class
+        self.phones = [phone for phone in self.phones if phone.value != phone_number]
+
+    def edit_phone(
+        self, old_phone_number, new_phone_number
+    ) -> None:  # edit a phone in list of object phones at record class
+        for phone in self.phones:
+            if phone.value == old_phone_number:
+                phone.value = new_phone_number
+                break
+
+    def find_phone(self, phone_number) -> Phone:  # find a phone and return Phone object
+        for phone in self.phones:
+            if phone.value == phone_number:
+                return phone
+        return None
+
+
+class AddressBook(UserDict):
+    # реалізація класу
+    def add_record(self, record: Record) -> None:  # add a Record object to AddressBook
+        self.data[record.name.value] = record
+
+    def find(self, name: str) -> Record:  # find a Record object by name
+        return self.data.get(name)
+
+    def delete(self, name: str) -> None:  # delete a Record object by name
+        if name in self.data:
+            del self.data[name]
+
+
+# Usage example:
+# Створення нової адресної книги
+book = AddressBook()
+
+# Створення запису для John
+john_record = Record("John")
+john_record.add_phone("1234567890")
+john_record.add_phone("5555555555")
+
+# Додавання запису John до адресної книги
+book.add_record(john_record)
+
+# Створення та додавання нового запису для Jane
+jane_record = Record("Jane")
+jane_record.add_phone("9876543210")
+book.add_record(jane_record)
+
+# Виведення всіх записів у книзі
+for name, record in book.data.items():
+    print(record)
+
+# Знаходження та редагування телефону для John
+john = book.find("John")
+john.edit_phone("1234567890", "1112223333")
+print(john)  # Виведення: Contact name: John, phones: 1112223333; 5555555555
+
+# Пошук конкретного телефону в записі John
+found_phone = john.find_phone("5555555555")
+print(f"{john.name}: {found_phone}")  # Виведення: 5555555555
+
+# Видалення запису Jane
+book.delete("Jane")
